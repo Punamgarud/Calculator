@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Dashboard - Tech Mahindra RMS</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                Dashboard
+            </h1>
+            <div class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                <span id="current-time"></span>
+            </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Employees
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" 
+                                     th:text="${dashboardData.totalEmployees}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Available Resources
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" 
+                                     th:text="${dashboardData.availableResources}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-laptop fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Active Projects
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" 
+                                     th:text="${dashboardData.activeProjects}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-project-diagram fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Active Allocations
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" 
+                                     th:text="${dashboardData.activeAllocations}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <!-- Employee Distribution Chart -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Employee Distribution by Department</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="employeeChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Distribution Chart -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Resource Distribution by Type</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="resourceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts and Recent Activities -->
+        <div class="row">
+            <!-- Critical Alerts -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-danger">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Critical Alerts
+                        </h6>
+                        <span class="badge bg-danger" th:text="${criticalAlerts.size()}">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${criticalAlerts.empty}" class="text-muted text-center py-3">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <p>No critical alerts at this time</p>
+                        </div>
+                        <div th:if="${!criticalAlerts.empty}">
+                            <div th:each="alert : ${criticalAlerts}" class="alert alert-warning alert-sm">
+                                <strong th:text="${alert.employee.fullName}">Employee Name</strong>
+                                allocation for <span th:text="${alert.project.projectName}">Project</span>
+                                <span th:if="${alert.overdue}" class="badge bg-danger ms-2">Overdue</span>
+                                <span th:if="${!alert.overdue}" class="badge bg-warning ms-2">Ending Soon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-clock me-1"></i>
+                            Recent Activities
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${dashboardData.recentAllocations.empty}" class="text-muted text-center py-3">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No recent activities</p>
+                        </div>
+                        <div th:if="${!dashboardData.recentAllocations.empty}">
+                            <div th:each="allocation : ${dashboardData.recentAllocations}" class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-primary rounded-circle p-2">
+                                            <i class="fas fa-plus text-white fa-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold" th:text="${allocation.employee.fullName}">Employee Name</div>
+                                        <div class="text-muted small">
+                                            Allocated to <span th:text="${allocation.project.projectName}">Project</span>
+                                            on <span th:text="${#temporals.format(allocation.allocationDate, 'MMM dd, yyyy')}">Date</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-bolt me-1"></i>
+                            Quick Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <a th:href="@{/employees/new}" class="btn btn-primary w-100">
+                                    <i class="fas fa-user-plus me-1"></i> Add Employee
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a th:href="@{/resources/new}" class="btn btn-success w-100">
+                                    <i class="fas fa-plus me-1"></i> Add Resource
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a th:href="@{/projects/new}" class="btn btn-info w-100">
+                                    <i class="fas fa-project-diagram me-1"></i> Create Project
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a th:href="@{/allocations/new}" class="btn btn-warning w-100">
+                                    <i class="fas fa-exchange-alt me-1"></i> New Allocation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script th:inline="javascript">
+            // Update current time
+            function updateTime() {
+                const now = new Date();
+                document.getElementById('current-time').textContent = now.toLocaleString();
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // Employee Distribution Chart
+            const employeeData = /*[[${employeeStatsByDepartment}]]*/ {};
+            const employeeCtx = document.getElementById('employeeChart').getContext('2d');
+            new Chart(employeeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(employeeData),
+                    datasets: [{
+                        data: Object.values(employeeData),
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Resource Distribution Chart
+            const resourceData = /*[[${resourceStatsByType}]]*/ {};
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            new Chart(resourceCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(resourceData),
+                    datasets: [{
+                        data: Object.values(resourceData),
+                        backgroundColor: '#1cc88a',
+                        borderColor: '#17a673',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>
