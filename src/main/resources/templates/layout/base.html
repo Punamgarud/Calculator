@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ? ${pageTitle} + ' - Tech Mahindra RMS' : 'Tech Mahindra Resource Management System'">
+        Tech Mahindra Resource Management System
+    </title>
+    
+    <!-- Bootstrap CSS -->
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script th:src="@{/webjars/chart.js/4.4.0/chart.min.js}"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --tm-primary: #0066cc;
+            --tm-secondary: #004499;
+            --tm-success: #28a745;
+            --tm-warning: #ffc107;
+            --tm-danger: #dc3545;
+            --tm-light: #f8f9fa;
+            --tm-dark: #343a40;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--tm-primary) !important;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background-color: var(--tm-dark);
+        }
+        
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin: 0.25rem 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: var(--tm-primary);
+            color: #fff;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: var(--tm-primary);
+            color: #fff;
+        }
+        
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        
+        .stat-card {
+            background: linear-gradient(45deg, var(--tm-primary), var(--tm-secondary));
+            color: white;
+        }
+        
+        .btn-primary {
+            background-color: var(--tm-primary);
+            border-color: var(--tm-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--tm-secondary);
+            border-color: var(--tm-secondary);
+        }
+        
+        .table th {
+            border-top: none;
+            background-color: var(--tm-light);
+            font-weight: 600;
+        }
+        
+        .badge-status-active { background-color: var(--tm-success); }
+        .badge-status-inactive { background-color: var(--tm-warning); }
+        .badge-status-terminated { background-color: var(--tm-danger); }
+        .badge-status-available { background-color: var(--tm-success); }
+        .badge-status-allocated { background-color: var(--tm-primary); }
+        .badge-status-maintenance { background-color: var(--tm-warning); }
+        .badge-status-retired { background-color: var(--tm-danger); }
+        .badge-status-overdue { background-color: var(--tm-danger); }
+        
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s;
+        }
+        
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+        
+        .footer {
+            background-color: var(--tm-dark);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: auto;
+        }
+    </style>
+    
+    <th:block th:fragment="head-extras">
+        <!-- Additional head content can be added here -->
+    </th:block>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <a class="navbar-brand" th:href="@{/dashboard}">
+                <i class="fas fa-server me-2"></i>
+                Tech Mahindra RMS
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <div class="sidebar position-fixed d-none d-md-block" style="top: 56px; width: 250px; z-index: 1000;">
+        <div class="p-3">
+            <nav class="nav flex-column">
+                <a class="nav-link" th:href="@{/dashboard}" th:classappend="${#request.requestURI == '/dashboard' ? 'active' : ''}">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link" th:href="@{/employees}" th:classappend="${#strings.startsWith(#request.requestURI, '/employees') ? 'active' : ''}">
+                    <i class="fas fa-users me-2"></i>
+                    Employees
+                </a>
+                <a class="nav-link" th:href="@{/resources}" th:classappend="${#strings.startsWith(#request.requestURI, '/resources') ? 'active' : ''}">
+                    <i class="fas fa-laptop me-2"></i>
+                    IT Resources
+                </a>
+                <a class="nav-link" th:href="@{/projects}" th:classappend="${#strings.startsWith(#request.requestURI, '/projects') ? 'active' : ''}">
+                    <i class="fas fa-project-diagram me-2"></i>
+                    Projects
+                </a>
+                <a class="nav-link" th:href="@{/allocations}" th:classappend="${#strings.startsWith(#request.requestURI, '/allocations') ? 'active' : ''}">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    Allocations
+                </a>
+                <a class="nav-link" th:href="@{/allocations/overdue}">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Overdue Items
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Mobile Sidebar -->
+    <div class="collapse d-md-none" id="sidebar">
+        <div class="bg-dark p-3">
+            <nav class="nav flex-column">
+                <a class="nav-link text-white" th:href="@{/dashboard}">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link text-white" th:href="@{/employees}">
+                    <i class="fas fa-users me-2"></i>
+                    Employees
+                </a>
+                <a class="nav-link text-white" th:href="@{/resources}">
+                    <i class="fas fa-laptop me-2"></i>
+                    IT Resources
+                </a>
+                <a class="nav-link text-white" th:href="@{/projects}">
+                    <i class="fas fa-project-diagram me-2"></i>
+                    Projects
+                </a>
+                <a class="nav-link text-white" th:href="@{/allocations}">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    Allocations
+                </a>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content" style="margin-top: 56px; min-height: calc(100vh - 56px);">
+        <div class="container-fluid p-4">
+            
+            <!-- Alert Messages -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
+            <!-- Page Content -->
+            <div th:replace="${content}">
+                <!-- Content will be replaced here -->
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="footer mt-auto">
+            <div class="container-fluid">
+                <span>&copy; 2024 Tech Mahindra. All rights reserved. | Resource Management System</span>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Scripts -->
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+        
+        // Add active class to current nav item
+        $(document).ready(function() {
+            var path = window.location.pathname;
+            $('.sidebar .nav-link').each(function() {
+                var href = $(this).attr('href');
+                if (path.startsWith(href) && href !== '/') {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+    
+    <th:block th:fragment="scripts">
+        <!-- Additional scripts can be added here -->
+    </th:block>
+</body>
+</html>
